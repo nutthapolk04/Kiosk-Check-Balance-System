@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useKioskStore } from '../stores/kioskStore';
 import { ChevronLeft, ArrowUpCircle, ArrowDownCircle, ReceiptText } from 'lucide-vue-next';
@@ -8,6 +8,7 @@ import type { Transaction } from '../api/mockApi';
 
 const router = useRouter();
 const store = useKioskStore();
+const currT = computed(() => t[store.language as 'EN' | 'TH']);
 
 const selectedTransaction = ref<Transaction | null>(null);
 const showReceipt = ref(false);
@@ -57,9 +58,9 @@ const formatCurrency = (val: number) => {
     <div class="header-section">
       <button class="back-btn" @click="goBack">
         <ChevronLeft :size="32" />
-        <span>{{ t[store.language].back }}</span>
+        <span>{{ currT.back }}</span>
       </button>
-      <h2>{{ t[store.language].title }}</h2>
+      <h2>{{ currT.title }}</h2>
       <div style="width: 100px"></div>
     </div>
 
@@ -79,14 +80,14 @@ const formatCurrency = (val: number) => {
           <div class="tx-main">
             <div class="tx-left">
               <span class="tx-type">
-                {{ tx.type === 'topup' ? t[store.language].topup : t[store.language].purchase }}
+                {{ tx.type === 'topup' ? currT.topup : currT.purchase }}
                 <span v-if="tx.type === 'purchase'" class="tx-shop"> - {{ tx.machine }}</span>
               </span>
               <!-- Purchase items list -->
               <ul v-if="tx.items && tx.items.length" class="tx-items">
                 <li v-for="(item, i) in tx.items" :key="i">
                   {{ item.name }}
-                  <span v-if="item.qty > 1"> {{ t[store.language].qty }}{{ item.qty }}</span>
+                  <span v-if="item.qty > 1"> {{ currT.qty }}{{ item.qty }}</span>
                   <span class="item-price">฿{{ formatCurrency(item.price * item.qty) }}</span>
                 </li>
               </ul>
@@ -108,7 +109,7 @@ const formatCurrency = (val: number) => {
     </div>
 
     <div v-else class="empty-state">
-      <p>{{ t[store.language].noData }}</p>
+      <p>{{ currT.noData }}</p>
     </div>
 
     <ReceiptPreview 

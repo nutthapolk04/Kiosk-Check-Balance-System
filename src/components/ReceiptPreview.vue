@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useKioskStore } from '../stores/kioskStore';
 import { X, Printer, CheckCircle2 } from 'lucide-vue-next';
+import { computed } from 'vue';
 import type { Transaction } from '../api/mockApi';
 
 const props = defineProps<{
@@ -9,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close']);
 const store = useKioskStore();
+const currT = computed(() => t[store.language as 'EN' | 'TH']);
 
 const t = {
   EN: {
@@ -77,28 +79,28 @@ const handlePrint = () => {
           <div class="receipt-logo">
             <CheckCircle2 :size="40" class="text-success" />
           </div>
-          <h2 class="receipt-title">{{ t[store.language].title }}</h2>
+          <h2 class="receipt-title">{{ currT.title }}</h2>
           <div class="receipt-separator-thick"></div>
         </div>
 
         <!-- Transaction details -->
         <div class="receipt-section">
           <div class="receipt-row">
-            <span class="r-label">{{ t[store.language].txId }}</span>
+            <span class="r-label">{{ currT.txId }}</span>
             <span class="r-value mono">{{ props.transaction.id }}</span>
           </div>
           <div class="receipt-row">
-            <span class="r-label">{{ t[store.language].type }}</span>
+            <span class="r-label">{{ currT.type }}</span>
             <span class="r-value type-badge" :class="props.transaction.type">
-              {{ props.transaction.type === 'topup' ? t[store.language].topup : t[store.language].purchase }}
+              {{ props.transaction.type === 'topup' ? currT.topup : currT.purchase }}
             </span>
           </div>
           <div class="receipt-row">
-            <span class="r-label">{{ t[store.language].date }}</span>
+            <span class="r-label">{{ currT.date }}</span>
             <span class="r-value">{{ props.transaction.date }} {{ props.transaction.time }}</span>
           </div>
           <div class="receipt-row">
-            <span class="r-label">{{ t[store.language].location }}</span>
+            <span class="r-label">{{ currT.location }}</span>
             <span class="r-value">{{ props.transaction.machine }}</span>
           </div>
         </div>
@@ -107,11 +109,11 @@ const handlePrint = () => {
         <div v-if="props.transaction.items && props.transaction.items.length" class="receipt-items-section">
           <div class="receipt-separator-dashed"></div>
           <div class="receipt-section">
-            <div class="items-header">{{ t[store.language].items }}</div>
+            <div class="items-header">{{ currT.items }}</div>
             <div v-for="(item, i) in props.transaction.items" :key="i" class="receipt-item-row">
               <span class="item-name">
                 {{ item.name }}
-                <span v-if="item.qty > 1" class="item-qty">{{ t[store.language].qty }}{{ item.qty }}</span>
+                <span v-if="item.qty > 1" class="item-qty">{{ currT.qty }}{{ item.qty }}</span>
               </span>
               <span class="item-price">฿{{ formatCurrency(item.price * item.qty) }}</span>
             </div>
@@ -123,11 +125,11 @@ const handlePrint = () => {
         <!-- Financial details -->
         <div class="receipt-section">
           <div class="receipt-row">
-            <span class="r-label">{{ t[store.language].before }}</span>
+            <span class="r-label">{{ currT.before }}</span>
             <span class="r-value">฿{{ formatCurrency(props.transaction.balanceBefore) }}</span>
           </div>
           <div class="receipt-row amount-row">
-            <span class="r-label">{{ t[store.language].amount }}</span>
+            <span class="r-label">{{ currT.amount }}</span>
             <span class="r-value amount-value" :class="props.transaction.type">
               {{ props.transaction.type === 'topup' ? '+' : '-' }}฿{{ formatCurrency(props.transaction.amount) }}
             </span>
@@ -139,7 +141,7 @@ const handlePrint = () => {
         <!-- Balance After — highlighted -->
         <div class="receipt-section balance-after-section">
           <div class="receipt-row balance-after-row">
-            <span class="r-label-large">{{ t[store.language].after }}</span>
+            <span class="r-label-large">{{ currT.after }}</span>
             <span class="r-value-large">฿{{ formatCurrency(props.transaction.balanceAfter) }}</span>
           </div>
         </div>
@@ -148,8 +150,8 @@ const handlePrint = () => {
 
         <!-- Footer -->
         <div class="receipt-thank-you">
-          <p>{{ t[store.language].thankYou }}</p>
-          <p class="powered-by">{{ t[store.language].poweredBy }}</p>
+          <p>{{ currT.thankYou }}</p>
+          <p class="powered-by">{{ currT.poweredBy }}</p>
         </div>
       </div>
 
@@ -157,10 +159,10 @@ const handlePrint = () => {
       <div class="receipt-actions no-print">
         <button class="action-btn print-btn" @click="handlePrint">
           <Printer :size="22" />
-          <span>{{ t[store.language].print }}</span>
+          <span>{{ currT.print }}</span>
         </button>
         <button class="action-btn close-action-btn" @click="emit('close')">
-          <span>{{ t[store.language].close }}</span>
+          <span>{{ currT.close }}</span>
         </button>
       </div>
     </div>

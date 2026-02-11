@@ -207,6 +207,8 @@ const nowFormatted = computed(() => {
   const min = d.getMinutes().toString().padStart(2, '0');
   return `${day} ${m} ${year} ${h}:${min}`;
 });
+
+const currT = computed(() => t[store.language as 'EN' | 'TH']);
 </script>
 
 <template>
@@ -215,9 +217,9 @@ const nowFormatted = computed(() => {
     <div class="header-section" v-if="currentStep !== 'success' && currentStep !== 'fail'">
       <button class="back-btn" @click="currentStep === 'methods' ? goBack() : currentStep === 'qr' ? backToAmount() : currentStep === 'amount' ? backToMethods() : goBack()">
         <ChevronLeft :size="32" />
-        <span>{{ t[store.language].back }}</span>
+        <span>{{ currT.back }}</span>
       </button>
-      <h2>{{ t[store.language].title }}</h2>
+      <h2>{{ currT.title }}</h2>
       <div style="width: 100px"></div>
     </div>
 
@@ -225,14 +227,14 @@ const nowFormatted = computed(() => {
     <div v-if="currentWallet && (currentStep === 'amount' || currentStep === 'qr')" class="wallet-bar" :style="{ background: currentWallet.colorTheme }">
       <div class="wallet-bar-name">{{ currentWallet.holderName }}</div>
       <div class="wallet-bar-balance">
-        <span class="wallet-bar-label">{{ t[store.language].currentBalance }}</span>
+        <span class="wallet-bar-label">{{ currT.currentBalance }}</span>
         <span class="wallet-bar-amount">{{ formatCurrency(currentWallet.balance) }}</span>
       </div>
     </div>
 
     <!-- Step 1: Method Selection -->
     <div v-if="currentStep === 'methods'" class="method-list">
-      <p class="sub-heading">{{ t[store.language].sub }}</p>
+      <p class="sub-heading">{{ currT.sub }}</p>
 
       <button
         v-for="m in methods"
@@ -247,7 +249,7 @@ const nowFormatted = computed(() => {
             <QrCode v-else-if="m.icon === 'qr'" :size="24" />
             <CreditCard v-else :size="24" />
           </div>
-          <span>{{ t[store.language][m.key as keyof typeof t.EN] }}</span>
+          <span>{{ (currT as any)[m.key] }}</span>
         </div>
         <ChevronRight :size="24" class="chevron" />
       </button>
@@ -259,7 +261,7 @@ const nowFormatted = computed(() => {
         <div class="amount-display" :class="{ 'has-value': amountNumber > 0 }">
           {{ formattedAmount }}
         </div>
-        <p class="max-hint">{{ t[store.language].maxAmount }}</p>
+        <p class="max-hint">{{ currT.maxAmount }}</p>
       </div>
 
       <!-- Shortcut Buttons -->
@@ -286,10 +288,10 @@ const nowFormatted = computed(() => {
       <div class="amount-footer">
         <button class="kiosk-btn btn-secondary" @click="backToMethods" style="max-width: 180px;">
           <ChevronLeft :size="24" />
-          <span>{{ t[store.language].back }}</span>
+          <span>{{ currT.back }}</span>
         </button>
         <button class="kiosk-btn btn-primary" :disabled="!isAmountValid" @click="confirmAmount" style="max-width: 260px;">
-          <span>{{ t[store.language].confirm }}</span>
+          <span>{{ currT.confirm }}</span>
         </button>
       </div>
     </div>
@@ -297,20 +299,20 @@ const nowFormatted = computed(() => {
     <!-- Step 3: QR Code Screen -->
     <div v-if="currentStep === 'qr'" class="qr-section">
       <div class="qr-card" :style="{ borderColor: selectedColor('border') }">
-        <h3 class="qr-method-name">{{ t[store.language][selectedMethod as keyof typeof t.EN] }}</h3>
+        <h3 class="qr-method-name">{{ (currT as any)[selectedMethod as any] }}</h3>
         <div class="qr-amount-badge">฿{{ formattedAmount }}</div>
         <div class="qr-placeholder" :style="{ backgroundColor: selectedColor('colorBg'), color: selectedColor('colorText') }">
           <QrCode :size="160" />
         </div>
-        <p class="scan-text">{{ t[store.language].scan }}</p>
-        <p class="sub-text">{{ t[store.language].amount }}</p>
+        <p class="scan-text">{{ currT.scan }}</p>
+        <p class="sub-text">{{ currT.amount }}</p>
       </div>
 
       <!-- Demo buttons to simulate success/fail -->
       <div class="demo-actions">
         <div class="demo-notice">
           <Smartphone :size="20" />
-          <span>{{ t[store.language].demo }}</span>
+          <span>{{ currT.demo }}</span>
         </div>
         <div class="demo-buttons">
           <button class="demo-btn success" @click="simulateSuccess">✓ Success</button>
@@ -325,22 +327,22 @@ const nowFormatted = computed(() => {
       <div class="result-icon success-icon-wrap">
         <CheckCircle2 :size="80" />
       </div>
-      <h2 class="result-title">{{ t[store.language].successTitle }}</h2>
+      <h2 class="result-title">{{ currT.successTitle }}</h2>
       <div class="result-details">
         <div class="result-row">
-          <span class="result-label">{{ t[store.language].successDate }}</span>
+          <span class="result-label">{{ currT.successDate }}</span>
           <span class="result-value">{{ nowFormatted }}</span>
         </div>
         <div class="result-row">
-          <span class="result-label">{{ t[store.language].successMethod }}</span>
-          <span class="result-value">{{ selectedMethod ? t[store.language][selectedMethod as keyof typeof t.EN] : '' }}</span>
+          <span class="result-label">{{ currT.successMethod }}</span>
+          <span class="result-value">{{ selectedMethod ? (currT as any)[selectedMethod] : '' }}</span>
         </div>
       </div>
       <div class="result-amount-box">
         <span class="result-amount">฿{{ formattedAmount }}</span>
       </div>
       <button class="kiosk-btn btn-primary" style="margin-top: 2rem;" @click="goBackToBalance">
-        {{ t[store.language].backToBalance }}
+        {{ currT.backToBalance }}
       </button>
     </div>
 
@@ -351,20 +353,20 @@ const nowFormatted = computed(() => {
           <AlertTriangle v-if="failType === 'internet'" :size="64" />
           <XCircle v-else :size="64" />
         </div>
-        <h3 class="fail-title">{{ t[store.language].failTitle }}</h3>
+        <h3 class="fail-title">{{ currT.failTitle }}</h3>
         <p class="fail-message">
-          {{ failType === 'internet' ? t[store.language].failNoInternet : t[store.language].failServer }}
+          {{ failType === 'internet' ? currT.failNoInternet : currT.failServer }}
         </p>
         <p class="fail-sub">
-          {{ failType === 'internet' ? t[store.language].failNoInternetSub : t[store.language].failServerSub }}
+          {{ failType === 'internet' ? currT.failNoInternetSub : currT.failServerSub }}
         </p>
-        <p v-if="failType === 'server'" class="fail-code">{{ t[store.language].failServerCode }}</p>
+        <p v-if="failType === 'server'" class="fail-code">{{ currT.failServerCode }}</p>
         <div class="fail-actions">
           <button class="kiosk-btn btn-primary" @click="retryTopup" v-if="failType === 'internet'">
-            {{ t[store.language].retry }}
+            {{ currT.retry }}
           </button>
           <button class="kiosk-btn btn-secondary" @click="goBackToBalance">
-            {{ t[store.language].close }}
+            {{ currT.close }}
           </button>
         </div>
       </div>

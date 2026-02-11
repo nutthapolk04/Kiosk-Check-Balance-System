@@ -11,6 +11,7 @@ const inputVal = ref('');
 const error = ref(false);
 const inputRef = ref<HTMLInputElement | null>(null);
 const showFullKeyboard = ref(false);
+const currT = computed(() => t[store.language as 'EN' | 'TH']);
 
 const t = {
   EN: {
@@ -106,14 +107,14 @@ onMounted(() => {
     <div class="header-section">
       <button class="back-btn" @click="goBack">
         <ChevronLeft :size="32" />
-        <span>{{ t[store.language].back }}</span>
+        <span>{{ currT.back }}</span>
       </button>
-      <h2>{{ t[store.language].title }}</h2>
+      <h2>{{ currT.title }}</h2>
       <div style="width: 100px"></div>
     </div>
 
     <div class="content">
-      <p class="sub-text mb-8">{{ t[store.language].sub }}</p>
+      <p class="sub-text mb-8">{{ currT.sub }}</p>
       
       <div class="input-wrapper" :class="{ 'error-border': error }">
         <input 
@@ -121,7 +122,7 @@ onMounted(() => {
           v-model="inputVal"
           type="text"
           class="real-input"
-          :placeholder="t[store.language].placeholder"
+          :placeholder="currT.placeholder"
           maxlength="12"
           @input="handleNativeInput"
           @keydown.enter="handleSubmit"
@@ -130,14 +131,14 @@ onMounted(() => {
       </div>
 
       <div v-if="error" class="error-msg mb-4">
-        {{ t[store.language].error }}
+        {{ currT.error }}
       </div>
       
       <!-- Layout Toggle -->
       <div class="keyboard-toggle mb-4">
         <button class="toggle-btn" @click="toggleKeyboardMode">
           <KeyboardIcon :size="20" />
-          <span>{{ showFullKeyboard ? t[store.language].useNumpad : t[store.language].useKeyboard }}</span>
+          <span>{{ showFullKeyboard ? currT.useNumpad : currT.useKeyboard }}</span>
         </button>
       </div>
 
@@ -164,7 +165,7 @@ onMounted(() => {
         :disabled="!isReady" 
         @click="handleSubmit"
       >
-        <span v-if="!store.isLoading">{{ t[store.language].submit }}</span>
+        <span v-if="!store.isLoading">{{ currT.submit }}</span>
         <span v-else class="loading-dots">Searching...</span>
       </button>
     </div>

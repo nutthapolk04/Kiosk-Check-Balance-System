@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
+import { computed } from 'vue';
 import { useKioskStore } from '../stores/kioskStore';
 import { CreditCard, Languages, MousePointer2 } from 'lucide-vue-next';
 
@@ -9,6 +10,8 @@ const store = useKioskStore();
 const toggleLanguage = () => {
   store.setLanguage(store.language === 'EN' ? 'TH' : 'EN');
 };
+
+const currT = computed(() => t[store.language as 'EN' | 'TH']);
 
 const goToManual = () => {
   router.push('/manual-input');
@@ -43,7 +46,7 @@ const t = {
     <div class="lang-switch-container">
       <button class="lang-btn" @click="toggleLanguage">
         <Languages :size="32" />
-        <span>{{ t[store.language].lang }}</span>
+        <span>{{ currT.lang }}</span>
       </button>
     </div>
 
@@ -59,8 +62,8 @@ const t = {
         </div>
       </div>
 
-      <h1 class="mb-4">{{ t[store.language].welcome }}</h1>
-      <p class="text-muted text-center mb-12">{{ t[store.language].sub }}</p>
+      <h1 class="mb-4">{{ currT.welcome }}</h1>
+      <p class="text-muted text-center mb-12">{{ currT.sub }}</p>
       
       <div class="hint-demo">
         <MousePointer2 :size="20" />
@@ -70,7 +73,7 @@ const t = {
 
     <div class="action-footer">
       <button class="kiosk-btn btn-secondary" @click="goToManual">
-        {{ t[store.language].manual }}
+        {{ currT.manual }}
       </button>
     </div>
   </div>

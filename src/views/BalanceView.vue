@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useKioskStore } from '../stores/kioskStore';
 import { User, LogOut, ChevronRight, ChevronLeft, Wallet, History } from 'lucide-vue-next';
 
 const router = useRouter();
 const store = useKioskStore();
+const currT = computed(() => t[store.language as 'EN' | 'TH']);
 
 if (!store.isAuthenticated) {
   router.push('/');
@@ -183,7 +184,7 @@ onUnmounted(() => {
         >
           <!-- Wallet Type Badge -->
           <div class="wallet-type-badge">
-            {{ wallet.type === 'personal' ? t[store.language].personal : t[store.language].child }}
+            {{ wallet.type === 'personal' ? currT.personal : currT.child }}
           </div>
 
           <div class="user-row">
@@ -192,7 +193,7 @@ onUnmounted(() => {
             </div>
             <div class="user-details">
               <h2 class="user-name">{{ wallet.holderName }}</h2>
-              <p class="balance-sub">{{ t[store.language].balance }} {{ t[store.language].balanceUnit }}</p>
+              <p class="balance-sub">{{ currT.balance }} {{ currT.balanceUnit }}</p>
             </div>
             <button class="logout-icon-btn" @click.stop="handleLogout" v-if="index === 0">
               <LogOut :size="24" />
@@ -205,8 +206,8 @@ onUnmounted(() => {
             </div>
           </div>
           <div class="user-meta-row">
-            <span class="meta-badge">{{ t[store.language].empId }}: {{ maskData(store.currentUser!.employeeId) }}</span>
-            <span class="meta-badge">{{ t[store.language].cardId }}: {{ maskData(wallet.cardId) }}</span>
+            <span class="meta-badge">{{ currT.empId }}: {{ maskData(store.currentUser!.employeeId) }}</span>
+            <span class="meta-badge">{{ currT.cardId }}: {{ maskData(wallet.cardId) }}</span>
           </div>
         </div>
       </div>
@@ -230,14 +231,14 @@ onUnmounted(() => {
 
     <!-- Service Menu — 2 items -->
     <div class="menu-section">
-      <h3 class="menu-title">{{ t[store.language].menuTitle }}</h3>
+      <h3 class="menu-title">{{ currT.menuTitle }}</h3>
 
       <button class="menu-item topup" @click="goToTopup">
         <div class="menu-item-left">
           <div class="menu-icon topup-icon">
             <Wallet :size="28" />
           </div>
-          <span>{{ t[store.language].topup }}</span>
+          <span>{{ currT.topup }}</span>
         </div>
         <ChevronRight :size="24" class="chevron" />
       </button>
@@ -247,7 +248,7 @@ onUnmounted(() => {
           <div class="menu-icon history-icon">
             <History :size="28" />
           </div>
-          <span>{{ t[store.language].history }}</span>
+          <span>{{ currT.history }}</span>
         </div>
         <ChevronRight :size="24" class="chevron" />
       </button>
