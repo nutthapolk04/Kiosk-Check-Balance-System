@@ -110,12 +110,20 @@ const handlePrint = () => {
           <div class="receipt-separator-dashed"></div>
           <div class="receipt-section">
             <div class="items-header">{{ currT.items }}</div>
-            <div v-for="(item, i) in props.transaction.items" :key="i" class="receipt-item-row">
-              <span class="item-name">
-                {{ item.name }}
-                <span v-if="item.qty > 1" class="item-qty">{{ currT.qty }}{{ item.qty }}</span>
-              </span>
-              <span class="item-price">฿{{ formatCurrency(item.price * item.qty) }}</span>
+            <div v-for="(item, i) in props.transaction.items" :key="i" class="receipt-item-container">
+              <div class="receipt-item-row">
+                <span class="item-name">
+                  {{ item.name }}
+                  <span v-if="item.qty > 1" class="item-qty">{{ currT.qty }}{{ item.qty }}</span>
+                </span>
+                <span class="item-price">฿{{ formatCurrency(item.price * item.qty) }}</span>
+              </div>
+              <!-- Add-ons in receipt -->
+              <div v-if="item.addons && item.addons.length" class="receipt-item-addons">
+                <div v-for="(addon, j) in item.addons" :key="j" class="receipt-addon-line">
+                  + {{ addon }}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -435,6 +443,24 @@ const handlePrint = () => {
   font-size: 0.9rem;
 }
 
+.receipt-item-container {
+  padding: 0.3rem 0;
+}
+
+.receipt-item-addons {
+  padding-left: 0.75rem;
+  margin-top: -0.15rem;
+  margin-bottom: 0.25rem;
+}
+
+.receipt-addon-line {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-style: italic;
+  display: block;
+  line-height: 1.2;
+}
+
 /* ===== Animation ===== */
 .animate-slide-up {
   animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -514,5 +540,10 @@ const handlePrint = () => {
   .amount-value { font-size: 11pt; }
   .receipt-thank-you { font-size: 7pt; }
   .powered-by { font-size: 6pt; }
+  .receipt-addon-line {
+    font-size: 7pt;
+    color: #444 !important;
+    font-style: normal;
+  }
 }
 </style>
