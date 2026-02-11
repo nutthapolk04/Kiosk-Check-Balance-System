@@ -2,6 +2,7 @@ export interface PurchaseItem {
     name: string;
     qty: number;
     price: number;
+    addons?: string[];
 }
 
 export interface Transaction {
@@ -120,8 +121,8 @@ const mockTransactions: Record<string, Transaction[]> = {
         { id: 'TX002', type: 'topup', date: '2024-05-10', time: '08:15', amount: 500.00, machine: 'Kiosk 01', balanceBefore: 795.75, balanceAfter: 1295.75 },
         {
             id: 'TX003', type: 'purchase', date: '2024-05-09', time: '12:45', amount: 35.00, machine: 'Beverage Vending', balanceBefore: 830.75, balanceAfter: 795.75, items: [
-                { name: 'ชาเขียว', qty: 1, price: 20.00 },
-                { name: 'ชานม', qty: 1, price: 15.00 }
+                { name: 'ชาเขียว', qty: 1, price: 20.00, addons: ['แก้วใหญ่'] },
+                { name: 'ชานม', qty: 1, price: 15.00, addons: ['หวานน้อย', 'เพิ่มไข่มุก'] }
             ]
         },
         {
@@ -136,15 +137,15 @@ const mockTransactions: Record<string, Transaction[]> = {
     '2': [
         {
             id: 'TX101', type: 'purchase', date: '2024-05-10', time: '12:00', amount: 80.00, machine: 'Canteen B', balanceBefore: 3500.00, balanceAfter: 3420.00, items: [
-                { name: 'ผัดไทย', qty: 1, price: 45.00 },
-                { name: 'ชาเย็น', qty: 1, price: 20.00 },
-                { name: 'ชานม', qty: 1, price: 15.00 }
+                { name: 'ผัดไทย', qty: 1, price: 45.00, addons: ['พิเศษ', 'ใส่ไข่'] },
+                { name: 'ชาเย็น', qty: 1, price: 20.00, addons: ['แก้วใหญ่'] },
+                { name: 'ชานม', qty: 1, price: 15.00, addons: ['หวานน้อย'] }
             ]
         },
         { id: 'TX102', type: 'topup', date: '2024-05-09', time: '09:30', amount: 2000.00, machine: 'Kiosk 03', balanceBefore: 1500.00, balanceAfter: 3500.00 },
         {
             id: 'TX103', type: 'purchase', date: '2024-05-09', time: '13:15', amount: 65.00, machine: 'Food Court', balanceBefore: 1565.00, balanceAfter: 1500.00, items: [
-                { name: 'ก๋วยเตี๋ยว', qty: 1, price: 40.00 },
+                { name: 'ก๋วยเตี๋ยว', qty: 1, price: 40.00, addons: ['พิเศษ', 'ใส่หมูกรอบ'] },
                 { name: 'น้ำอัดลม', qty: 1, price: 25.00 }
             ]
         },
@@ -164,7 +165,7 @@ const mockTransactions: Record<string, Transaction[]> = {
         },
         {
             id: 'TX107', type: 'purchase', date: '2024-05-07', time: '08:10', amount: 30.00, machine: 'Coffee Kiosk', balanceBefore: 800.00, balanceAfter: 770.00, items: [
-                { name: 'กาแฟร้อน', qty: 1, price: 30.00 }
+                { name: 'กาแฟร้อน', qty: 1, price: 30.00, addons: ['เอสเพรสโซ่ช็อต', 'ไม่ใส่น้ำตาล'] }
             ]
         },
         { id: 'TX108', type: 'topup', date: '2024-05-06', time: '10:00', amount: 500.00, machine: 'Kiosk 01', balanceBefore: 300.00, balanceAfter: 800.00 },

@@ -77,25 +77,28 @@ const formatCurrency = (val: number) => {
         </div>
         
         <div class="tx-details">
-          <div class="tx-main">
-            <div class="tx-left">
-              <span class="tx-type">
-                {{ tx.type === 'topup' ? currT.topup : currT.purchase }}
-                <span v-if="tx.type === 'purchase'" class="tx-shop"> - {{ tx.machine }}</span>
-              </span>
-              <!-- Purchase items list -->
-              <ul v-if="tx.items && tx.items.length" class="tx-items">
-                <li v-for="(item, i) in tx.items" :key="i">
-                  {{ item.name }}
-                  <span v-if="item.qty > 1"> {{ currT.qty }}{{ item.qty }}</span>
-                  <span class="item-price">฿{{ formatCurrency(item.price * item.qty) }}</span>
-                </li>
-              </ul>
-            </div>
+          <div class="tx-header-row">
+            <span class="tx-type">
+              {{ tx.type === 'topup' ? currT.topup : currT.purchase }}
+              <span v-if="tx.type === 'purchase'" class="tx-shop"> - {{ tx.machine }}</span>
+            </span>
             <span class="tx-amount" :class="tx.type">
               {{ tx.type === 'topup' ? '+' : '-' }} {{ formatCurrency(tx.amount) }}
             </span>
           </div>
+          <!-- Purchase items list -->
+          <ul v-if="tx.items && tx.items.length" class="tx-items">
+            <li v-for="(item, i) in tx.items" :key="i">
+              <div class="item-main-row">
+                <span class="item-name">{{ item.name }}</span>
+                <span v-if="item.qty > 1" class="item-qty">{{ currT.qty }}{{ item.qty }}</span>
+                <span class="item-price">฿{{ formatCurrency(item.price * item.qty) }}</span>
+              </div>
+              <div v-if="item.addons && item.addons.length" class="item-addons">
+                <span v-for="(addon, j) in item.addons" :key="j" class="addon-tag">{{ addon }}</span>
+              </div>
+            </li>
+          </ul>
           <div class="tx-meta">
             <span>{{ tx.date }} {{ tx.time }}</span>
             <span v-if="tx.type === 'topup'">• {{ tx.machine }}</span>
@@ -174,23 +177,29 @@ const formatCurrency = (val: number) => {
 
 .tx-details {
   flex: 1;
+  min-width: 0;
 }
 
-.tx-main {
+.tx-header-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 0.25rem;
 }
 
 .tx-type {
   font-weight: 700;
   font-size: 1.25rem;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .tx-amount {
   font-weight: 800;
   font-size: 1.5rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tx-amount.topup { color: #10b981; }
@@ -206,14 +215,6 @@ const formatCurrency = (val: number) => {
   opacity: 0.5;
 }
 
-.tx-left {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-  min-width: 0;
-}
-
 .tx-shop {
   font-weight: 600;
   color: var(--text-muted);
@@ -223,24 +224,33 @@ const formatCurrency = (val: number) => {
 .tx-items {
   list-style: none;
   padding: 0;
-  margin: 0.25rem 0 0 0;
+  margin: 0.35rem 0 0.35rem 0;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.35rem;
 }
 
 .tx-items li {
   font-size: 0.85rem;
   color: var(--text-muted);
+  padding-left: 0.75rem;
+  border-left: 3px solid #e2e8f0;
+}
+
+.item-main-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.tx-items li::before {
-  content: '•';
-  color: #cbd5e1;
-  font-weight: 700;
+.item-name {
+  font-weight: 600;
+  color: #475569;
+}
+
+.item-qty {
+  font-size: 0.8rem;
+  color: #94a3b8;
 }
 
 .item-price {
@@ -248,6 +258,24 @@ const formatCurrency = (val: number) => {
   font-weight: 600;
   font-size: 0.8rem;
   color: #64748b;
+}
+
+.item-addons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.2rem;
+  padding-left: 0.25rem;
+}
+
+.addon-tag {
+  font-size: 0.72rem;
+  color: #6366f1;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  padding: 0.1rem 0.5rem;
+  border-radius: 1rem;
+  font-weight: 600;
 }
 
 .empty-state {
