@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useKioskStore } from '../stores/kioskStore';
-import { ChevronLeft, ChevronRight, Banknote, QrCode, CreditCard, Smartphone, CheckCircle2, AlertTriangle, XCircle } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ChevronLeft, ChevronRight, Banknote, QrCode, CreditCard, Smartphone, CheckCircle2, AlertTriangle, XCircle, Timer, ArrowLeft } from 'lucide-vue-next';
+import { ref, computed, onUnmounted } from 'vue';
 
 const router = useRouter();
 const store = useKioskStore();
@@ -43,6 +43,13 @@ const t = {
     failServerCode: 'Service Unavailable',
     retry: 'Try Again',
     close: 'Close',
+    minAmount: 'Minimum top-up: 1 Baht',
+    timeRemaining: 'Time remaining',
+    qrExpired: 'QR Code has expired',
+    qrExpiredSub: 'Please try again to generate a new QR code.',
+    cancelTopup: 'Cancel Top-up',
+    changeMethod: 'Change Payment Method',
+    seconds: 'sec',
   },
   TH: {
     title: 'เติมเงิน',
@@ -75,6 +82,13 @@ const t = {
     failServerCode: '503 Service Unavailable',
     retry: 'ลองอีกครั้ง',
     close: 'ปิด',
+    minAmount: 'เติมเงินขั้นต่ำ 1 บาท',
+    timeRemaining: 'เวลาที่เหลือ',
+    qrExpired: 'QR Code หมดอายุ',
+    qrExpiredSub: 'กรุณาทำรายการใหม่อีกครั้ง',
+    cancelTopup: 'ยกเลิกการเติมเงิน',
+    changeMethod: 'เปลี่ยนช่องทางชำระ',
+    seconds: 'วินาที',
   }
 };
 
@@ -156,7 +170,38 @@ const selectShortcut = (val: number) => {
 const confirmAmount = () => {
   if (!isAmountValid.value) return;
   currentStep.value = 'qr';
+  startQrTimer();
 };
+
+// --- QR Timer (120 seconds) ---
+const QR_TIMEOUT = 120;
+const qrTimeLeft = ref(QR_TIMEOUT);
+let qrTimerInterval: number | null = null;
+
+const qrProgress = computed(() => qrTimeLeft.value / QR_TIMEOUT);
+const isQrExpired = computed(() => qrTimeLeft.value <= 0);
+
+const startQrTimer = () => {
+  clearQrTimer();
+  qrTimeLeft.value = QR_TIMEOUT;
+  qrTimerInterval = window.setInterval(() => {
+    qrTimeLeft.value--;
+    if (qrTimeLeft.value <= 0) {
+      clearQrTimer();
+    }
+  }, 1000);
+};
+
+const clearQrTimer = () => {
+  if (qrTimerInterval) {
+    clearInterval(qrTimerInterval);
+    qrTimerInterval = null;
+  }
+};
+
+onUnmounted(() => {
+  clearQrTimer();
+});
 
 // Simulate top-up result (demo)
 const simulateSuccess = () => {
@@ -172,18 +217,28 @@ const backToMethods = () => {
   selectedMethod.value = null;
   currentStep.value = 'methods';
   enteredAmount.value = '0';
+  clearQrTimer();
 };
 
 const backToAmount = () => {
   currentStep.value = 'amount';
+  clearQrTimer();
 };
 
 const goBack = () => {
+  clearQrTimer();
   router.push('/balance');
 };
 
 const goBackToBalance = () => {
+  clearQrTimer();
   router.push('/balance');
+};
+
+const cancelTopup = () => {
+  clearQrTimer();
+  store.logout();
+  router.push('/');
 };
 
 const retryTopup = () => {
@@ -301,11 +356,48 @@ const currT = computed(() => t[store.language as 'EN' | 'TH']);
       <div class="qr-card" :style="{ borderColor: selectedColor('border') }">
         <h3 class="qr-method-name">{{ (currT as any)[selectedMethod as any] }}</h3>
         <div class="qr-amount-badge">฿{{ formattedAmount }}</div>
-        <div class="qr-placeholder" :style="{ backgroundColor: selectedColor('colorBg'), color: selectedColor('colorText') }">
-          <QrCode :size="160" />
+        
+        <!-- QR Code with overlay when expired -->
+        <div class="qr-wrapper">
+          <div class="qr-placeholder" :class="{ expired: isQrExpired }" :style="{ backgroundColor: selectedColor('colorBg'), color: selectedColor('colorText') }">
+            <QrCode :size="160" />
+          </div>
+          <div v-if="isQrExpired" class="qr-expired-overlay">
+            <XCircle :size="48" />
+            <span>{{ currT.qrExpired }}</span>
+          </div>
         </div>
-        <p class="scan-text">{{ currT.scan }}</p>
-        <p class="sub-text">{{ currT.amount }}</p>
+
+        <!-- Countdown Timer -->
+        <div class="qr-timer" :class="{ 'timer-warning': qrTimeLeft <= 30, 'timer-danger': qrTimeLeft <= 10 }">
+          <Timer :size="18" />
+          <span>{{ currT.timeRemaining }}: </span>
+          <span class="timer-value">{{ Math.floor(qrTimeLeft / 60) }}:{{ (qrTimeLeft % 60).toString().padStart(2, '0') }}</span>
+        </div>
+
+        <!-- Timer Progress Bar -->
+        <div class="timer-bar">
+          <div class="timer-bar-fill" :style="{ width: (qrProgress * 100) + '%' }" :class="{ 'bar-warning': qrTimeLeft <= 30, 'bar-danger': qrTimeLeft <= 10 }"></div>
+        </div>
+
+        <p v-if="!isQrExpired" class="scan-text">{{ currT.scan }}</p>
+        <p v-if="!isQrExpired" class="sub-text">{{ currT.amount }}</p>
+        <p v-if="isQrExpired" class="expired-sub-text">{{ currT.qrExpiredSub }}</p>
+
+        <!-- Min amount info -->
+        <p class="min-amount-hint">{{ currT.minAmount }}</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="qr-actions">
+        <button class="kiosk-btn btn-secondary qr-action-btn" @click="backToMethods">
+          <ArrowLeft :size="20" />
+          <span>{{ currT.changeMethod }}</span>
+        </button>
+        <button class="kiosk-btn btn-danger qr-action-btn" @click="cancelTopup">
+          <XCircle :size="20" />
+          <span>{{ currT.cancelTopup }}</span>
+        </button>
       </div>
 
       <!-- Demo buttons to simulate success/fail -->
@@ -647,6 +739,135 @@ const currT = computed(() => t[store.language as 'EN' | 'TH']);
 .sub-text {
   color: var(--text-muted);
   font-size: 0.95rem;
+}
+
+/* QR Timer */
+.qr-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 0.75rem;
+}
+
+.qr-placeholder.expired {
+  opacity: 0.15;
+  filter: blur(2px);
+}
+
+.qr-expired-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.qr-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #16a34a;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s;
+}
+
+.qr-timer.timer-warning {
+  color: #d97706;
+}
+
+.qr-timer.timer-danger {
+  color: #dc2626;
+  animation: pulse-danger 1s infinite;
+}
+
+.timer-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-bar {
+  width: 80%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  margin: 0 auto 1rem;
+  overflow: hidden;
+}
+
+.timer-bar-fill {
+  height: 100%;
+  background: #16a34a;
+  border-radius: 3px;
+  transition: width 1s linear, background 0.3s;
+}
+
+.timer-bar-fill.bar-warning {
+  background: #d97706;
+}
+
+.timer-bar-fill.bar-danger {
+  background: #dc2626;
+}
+
+.min-amount-hint {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 0.35rem 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  display: inline-block;
+}
+
+.expired-sub-text {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* QR Action Buttons */
+.qr-actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 450px;
+  margin-top: 1.25rem;
+}
+
+.qr-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  padding: 0.85rem 1rem;
+}
+
+.btn-danger {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 2px solid #fca5a5 !important;
+}
+
+.btn-danger:hover {
+  background: #fee2e2 !important;
+}
+
+@keyframes pulse-danger {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 /* Demo actions */
